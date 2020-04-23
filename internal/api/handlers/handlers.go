@@ -5,10 +5,16 @@ import (
 	"html"
 	"log"
 	"net/http"
+
+	"github.com/taipoxin/rest-mysql-go/internal/api/models"
 )
 
+type HandlersEnv struct {
+	Db models.Datastore
+}
+
 // RootHandler - handler for /
-func RootHandler(w http.ResponseWriter, r *http.Request) {
+func (env *HandlersEnv) RootHandler(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
 		errorHandler(w, r, http.StatusNotFound, nil)
 		return
@@ -18,13 +24,21 @@ func RootHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // GetWelcomeHandler - handler for /welcome
-func GetWelcomeHandler(w http.ResponseWriter, r *http.Request) {
+func (env *HandlersEnv) GetWelcomeHandler(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 	if err != nil {
-		errorHandler(w, r, http.StatusInternalServerError, nil)
+		errorHandler(w, r, http.StatusInternalServerError, err)
 		return
 	}
-	fmt.Fprint(w, "Welcome to my rest api! \nYour params are: ", r.Form)
+	fmt.Fprint(w, "Welcome to my rest api! \nYour params are: ", r.Form, "\n")
+
+	posts, err := env.Db.AllPosts()
+	if err != nil {
+		errorHandler(w, r, http.StatusInternalServerError, err)
+		return
+	}
+
+	fmt.Fprint(w, posts, "\n")
 }
 
 func errorHandler(w http.ResponseWriter, r *http.Request, status int, err error) {
