@@ -20,6 +20,8 @@ func Start(addr string) {
 	}
 
 	http.HandleFunc("/", handlersEnv.RootHandler)
+	http.HandleFunc("/welcome", handlersEnv.GetWelcomeHandler)
+
 	http.HandleFunc("/posts", handlersEnv.GetPosts)
 	http.HandleFunc("/post", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
