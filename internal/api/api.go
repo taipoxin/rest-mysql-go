@@ -4,6 +4,8 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/gorilla/mux"
+
 	"github.com/taipoxin/rest-mysql-go/internal/api/handlers"
 	"github.com/taipoxin/rest-mysql-go/internal/api/models"
 )
@@ -19,24 +21,19 @@ func Start(addr string) {
 		Db: db,
 	}
 
-	http.HandleFunc("/", handlersEnv.RootHandler)
-	http.HandleFunc("/welcome", handlersEnv.GetWelcomeHandler)
+	r := mux.NewRouter()
 
-	http.HandleFunc("/posts", handlersEnv.GetPosts)
-	http.HandleFunc("/post", func(w http.ResponseWriter, r *http.Request) {
-		switch r.Method {
-		case "GET":
-			handlersEnv.GetPost(w, r)
-		case "POST":
-			handlersEnv.AddPost(w, r)
-		case "PUT":
-			handlersEnv.UpdatePost(w, r)
-		case "DELETE":
-			handlersEnv.DeletePost(w, r)
-		}
-	})
+	r.HandleFunc("/", handlersEnv.RootHandler).Methods("GET")
+	r.HandleFunc("/welcome", handlersEnv.GetWelcomeHandler).Methods("GET")
+
+	r.HandleFunc("/posts", handlersEnv.GetPosts).Methods("GET")
+
+	r.HandleFunc("/post/{id}", handlersEnv.GetPost).Methods("GET")
+	r.HandleFunc("/post", handlersEnv.AddPost).Methods("POST")
+	r.HandleFunc("/post", handlersEnv.UpdatePost).Methods("PUT")
+	r.HandleFunc("/post/{id}", handlersEnv.DeletePost).Methods("DELETE")
 
 	log.Printf("server is listening on addr: %s\n", addr)
-	log.Fatal(http.ListenAndServe(addr, nil))
+	log.Fatal(http.ListenAndServe(addr, r))
 
 }

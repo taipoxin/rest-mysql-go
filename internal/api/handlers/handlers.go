@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/gorilla/mux"
+
 	"github.com/taipoxin/rest-mysql-go/internal/api/models"
 )
 
@@ -18,10 +20,6 @@ type Env struct {
 
 // RootHandler - handler for /
 func (env *Env) RootHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "GET" {
-		errorHandler(w, r, http.StatusMethodNotAllowed, nil)
-		return
-	}
 	if r.URL.Path != "/" {
 		errorHandler(w, r, http.StatusNotFound, nil)
 		return
@@ -32,10 +30,6 @@ func (env *Env) RootHandler(w http.ResponseWriter, r *http.Request) {
 
 // GetPosts - handler for GET /posts
 func (env *Env) GetPosts(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "GET" {
-		errorHandler(w, r, http.StatusMethodNotAllowed, nil)
-		return
-	}
 	posts, err := env.Db.AllPosts()
 	if err != nil {
 		errorHandler(w, r, http.StatusInternalServerError, err)
@@ -44,23 +38,11 @@ func (env *Env) GetPosts(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, posts, "\n")
 }
 
-// GetPost - handler for GET /post?id=x
+// GetPost - handler for GET /post/{id}
 func (env *Env) GetPost(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "GET" {
-		errorHandler(w, r, http.StatusMethodNotAllowed, nil)
-		return
-	}
-	err := r.ParseForm()
-	if err != nil {
-		errorHandler(w, r, http.StatusInternalServerError, err)
-		return
-	}
-	if len(r.Form["id"]) == 0 {
-		errorHandler(w, r, http.StatusBadRequest, err)
-		return
-	}
+	vars := mux.Vars(r)
 	// id is int64
-	id, err := strconv.ParseInt(r.Form["id"][0], 10, 64)
+	id, err := strconv.ParseInt(vars["id"], 10, 64)
 	if err != nil {
 		errorHandler(w, r, http.StatusBadRequest, err)
 		return
@@ -79,10 +61,6 @@ func (env *Env) GetPost(w http.ResponseWriter, r *http.Request) {
 
 // AddPost - handler for POST /post
 func (env *Env) AddPost(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "POST" {
-		errorHandler(w, r, http.StatusMethodNotAllowed, nil)
-		return
-	}
 
 	var p models.Post
 	err := json.NewDecoder(r.Body).Decode(&p)
@@ -101,10 +79,6 @@ func (env *Env) AddPost(w http.ResponseWriter, r *http.Request) {
 
 // UpdatePost - handler for PUT /post
 func (env *Env) UpdatePost(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "PUT" {
-		errorHandler(w, r, http.StatusMethodNotAllowed, nil)
-		return
-	}
 
 	var p models.Post
 	err := json.NewDecoder(r.Body).Decode(&p)
@@ -125,23 +99,11 @@ func (env *Env) UpdatePost(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// DeletePost - handler for Delete /post
+// DeletePost - handler for Delete /post/{id}
 func (env *Env) DeletePost(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "DELETE" {
-		errorHandler(w, r, http.StatusMethodNotAllowed, nil)
-		return
-	}
-	err := r.ParseForm()
-	if err != nil {
-		errorHandler(w, r, http.StatusInternalServerError, err)
-		return
-	}
-	if len(r.Form["id"]) == 0 {
-		errorHandler(w, r, http.StatusBadRequest, err)
-		return
-	}
+	vars := mux.Vars(r)
 	// id is int64
-	id, err := strconv.ParseInt(r.Form["id"][0], 10, 64)
+	id, err := strconv.ParseInt(vars["id"], 10, 64)
 	if err != nil {
 		errorHandler(w, r, http.StatusBadRequest, err)
 		return
@@ -162,10 +124,6 @@ func (env *Env) DeletePost(w http.ResponseWriter, r *http.Request) {
 
 // GetWelcomeHandler - handler for /welcome
 func (env *Env) GetWelcomeHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "GET" {
-		errorHandler(w, r, http.StatusMethodNotAllowed, nil)
-		return
-	}
 	err := r.ParseForm()
 	if err != nil {
 		errorHandler(w, r, http.StatusInternalServerError, err)
