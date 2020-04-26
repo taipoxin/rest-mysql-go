@@ -61,57 +61,63 @@ func (db *DbHelper) GetPost(id int64) (*Post, error) {
 	return post, nil
 }
 
-// curl -X POST -d "{\"title\": \"that\"}" http://localhost:3000/addpost
+// curl -X POST -d "{\"title\": \"that\"}" http://localhost:3000/post
 
 // AddPost add new post with title
 func (db *DbHelper) AddPost(title string) error {
 	result, err := db.Exec("INSERT INTO  posts (title) VALUES (?)", title)
-	err = logResultSet(result)
+	_, _, err = logResultSet(result)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-// curl -X PUT -d "{\"title\": \"this\", \"id\" : 5}" http://localhost:3000/updatepost
+// curl -X PUT -d "{\"title\": \"this\", \"id\" : 5}" http://localhost:3000/post
 
 // UpdatePost update post with new title by id
-func (db *DbHelper) UpdatePost(id int64, title string) error {
+func (db *DbHelper) UpdatePost(id int64, title string) (bool, error) {
 	result, err := db.Exec("UPDATE posts SET title = ? WHERE id = ?", title, id)
 	if err != nil {
-		return err
+		return false, err
 	}
-	err = logResultSet(result)
+	_, ra, err := logResultSet(result)
 	if err != nil {
-		return err
+		return false, err
 	}
-	return nil
+	if ra != 0 {
+		return true, nil
+	}
+	return false, nil
 }
 
-// curl -X DELETE  http://localhost:3000/deletepost?id=3
+// curl -X DELETE  http://localhost:3000/post?id=3
 
 // DeletePost delete post by id
-func (db *DbHelper) DeletePost(id int64) error {
+func (db *DbHelper) DeletePost(id int64) (bool, error) {
 	result, err := db.Exec("DELETE from posts WHERE id = ?", id)
 	if err != nil {
-		return err
+		return false, err
 	}
-	err = logResultSet(result)
+	_, ra, err := logResultSet(result)
 	if err != nil {
-		return err
+		return false, err
 	}
-	return nil
+	if ra != 0 {
+		return true, nil
+	}
+	return false, nil
 }
 
-func logResultSet(result sql.Result) error {
+func logResultSet(result sql.Result) (lastInserted int64, rowsAffected int64, err error) {
 	li, err := result.LastInsertId()
 	if err != nil {
-		return err
+		return 0, 0, err
 	}
 	ra, err := result.RowsAffected()
 	if err != nil {
-		return err
+		return 0, 0, err
 	}
 	log.Println("exec on post:{ last id: ", li, " rows affected: ", ra, " }")
-	return nil
+	return li, ra, nil
 }

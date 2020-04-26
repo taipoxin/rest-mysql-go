@@ -14,8 +14,8 @@ type Datastore interface {
 	AllPosts() ([]*Post, error)
 	GetPost(id int64) (*Post, error)
 	AddPost(title string) error
-	UpdatePost(id int64, title string) error
-	DeletePost(id int64) error
+	UpdatePost(id int64, title string) (bool, error)
+	DeletePost(id int64) (bool, error)
 }
 
 // DbHelper presenting helper for sql.DB, implement Datastore

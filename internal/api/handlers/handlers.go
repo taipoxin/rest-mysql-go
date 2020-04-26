@@ -11,12 +11,13 @@ import (
 	"github.com/taipoxin/rest-mysql-go/internal/api/models"
 )
 
-type HandlersEnv struct {
+// Env - container for hanlders & Datastore
+type Env struct {
 	Db models.Datastore
 }
 
 // RootHandler - handler for /
-func (env *HandlersEnv) RootHandler(w http.ResponseWriter, r *http.Request) {
+func (env *Env) RootHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "GET" {
 		errorHandler(w, r, http.StatusMethodNotAllowed, nil)
 		return
@@ -30,7 +31,7 @@ func (env *HandlersEnv) RootHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // GetPosts - handler for GET /posts
-func (env *HandlersEnv) GetPosts(w http.ResponseWriter, r *http.Request) {
+func (env *Env) GetPosts(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "GET" {
 		errorHandler(w, r, http.StatusMethodNotAllowed, nil)
 		return
@@ -44,7 +45,7 @@ func (env *HandlersEnv) GetPosts(w http.ResponseWriter, r *http.Request) {
 }
 
 // GetPost - handler for GET /post?id=x
-func (env *HandlersEnv) GetPost(w http.ResponseWriter, r *http.Request) {
+func (env *Env) GetPost(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "GET" {
 		errorHandler(w, r, http.StatusMethodNotAllowed, nil)
 		return
@@ -77,7 +78,7 @@ func (env *HandlersEnv) GetPost(w http.ResponseWriter, r *http.Request) {
 }
 
 // AddPost - handler for POST /post
-func (env *HandlersEnv) AddPost(w http.ResponseWriter, r *http.Request) {
+func (env *Env) AddPost(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
 		errorHandler(w, r, http.StatusMethodNotAllowed, nil)
 		return
@@ -98,8 +99,8 @@ func (env *HandlersEnv) AddPost(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "inserted successfully", "\n")
 }
 
-// UpdatePost - handler for PUT /updatepost
-func (env *HandlersEnv) UpdatePost(w http.ResponseWriter, r *http.Request) {
+// UpdatePost - handler for PUT /post
+func (env *Env) UpdatePost(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "PUT" {
 		errorHandler(w, r, http.StatusMethodNotAllowed, nil)
 		return
@@ -112,16 +113,20 @@ func (env *HandlersEnv) UpdatePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = env.Db.UpdatePost(p.ID, p.Title)
+	isUpdated, err := env.Db.UpdatePost(p.ID, p.Title)
 	if err != nil {
 		errorHandler(w, r, http.StatusInternalServerError, err)
 		return
 	}
-	fmt.Fprint(w, "updated successfully", "\n")
+	if isUpdated {
+		fmt.Fprint(w, "updated successfully", "\n")
+	} else {
+		fmt.Fprint(w, "nothing to update", "\n")
+	}
 }
 
-// DeletePost - handler for Delete /deletepost
-func (env *HandlersEnv) DeletePost(w http.ResponseWriter, r *http.Request) {
+// DeletePost - handler for Delete /post
+func (env *Env) DeletePost(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "DELETE" {
 		errorHandler(w, r, http.StatusMethodNotAllowed, nil)
 		return
@@ -142,16 +147,21 @@ func (env *HandlersEnv) DeletePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = env.Db.DeletePost(id)
+	isDeleted, err := env.Db.DeletePost(id)
 	if err != nil {
 		errorHandler(w, r, http.StatusInternalServerError, err)
 		return
 	}
-	fmt.Fprint(w, "deleted successfully", "\n")
+
+	if isDeleted {
+		fmt.Fprint(w, "deleted successfully", "\n")
+	} else {
+		fmt.Fprint(w, "nothing to delete", "\n")
+	}
 }
 
 // GetWelcomeHandler - handler for /welcome
-func (env *HandlersEnv) GetWelcomeHandler(w http.ResponseWriter, r *http.Request) {
+func (env *Env) GetWelcomeHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "GET" {
 		errorHandler(w, r, http.StatusMethodNotAllowed, nil)
 		return
