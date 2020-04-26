@@ -1,7 +1,10 @@
 package models
 
-import "fmt"
+import (
+	"fmt"
+)
 
+// Post entity of table `posts`
 type Post struct {
 	ID    int64
 	Title string
@@ -11,7 +14,8 @@ func (p *Post) String() string {
 	return fmt.Sprintf("id: %v, title: %v", p.ID, p.Title)
 }
 
-func (db *DB) AllPosts() ([]*Post, error) {
+// AllPosts return all `posts` from db
+func (db *DbHelper) AllPosts() ([]*Post, error) {
 	rows, err := db.Query("SELECT * FROM posts")
 	if err != nil {
 		return nil, err
@@ -20,7 +24,7 @@ func (db *DB) AllPosts() ([]*Post, error) {
 
 	posts := make([]*Post, 0)
 	for rows.Next() {
-		post := new(Post)
+		post := &Post{}
 		err := rows.Scan(&post.ID, &post.Title)
 		if err != nil {
 			return nil, err

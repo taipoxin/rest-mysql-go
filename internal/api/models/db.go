@@ -5,19 +5,22 @@ import (
 	"log"
 	"os"
 
+	// mysql driver
 	_ "github.com/go-sql-driver/mysql"
 )
 
+// Datastore presenting interface with methods for handlers
 type Datastore interface {
 	AllPosts() ([]*Post, error)
 }
 
-type DB struct {
+// DbHelper presenting helper for sql.DB, implement Datastore
+type DbHelper struct {
 	*sql.DB
 }
 
-func EstablishConnection() *DB {
-
+// EstablishConnection use DATABASE_TYPE and return DB with sql.DB inside
+func EstablishConnection() *DbHelper {
 	var db *sql.DB
 	dbType := os.Getenv("DATABASE_TYPE")
 	switch dbType {
@@ -26,8 +29,7 @@ func EstablishConnection() *DB {
 	default:
 		log.Fatal("invalid .env:DATABASE_TYPE, available: mysql")
 	}
-
-	return &DB{db}
+	return &DbHelper{db}
 }
 
 func connectMysql() *sql.DB {
