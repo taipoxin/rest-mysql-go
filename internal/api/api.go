@@ -28,10 +28,10 @@ func Start(addr string) {
 
 	r.HandleFunc("/posts", handlersEnv.GetPosts).Methods("GET")
 
-	r.HandleFunc("/post/{id}", handlersEnv.GetPost).Methods("GET")
+	r.HandleFunc("/post/{id:[0-9]+}", handlersEnv.GetPost).Methods("GET")
 	r.HandleFunc("/post", handlersEnv.AddPost).Methods("POST")
 	r.HandleFunc("/post", handlersEnv.UpdatePost).Methods("PUT")
-	r.HandleFunc("/post/{id}", handlersEnv.DeletePost).Methods("DELETE")
+	r.HandleFunc("/post/{id:[0-9]+}", handlersEnv.DeletePost).Methods("DELETE")
 
 	log.Printf("server is listening on addr: %s\n", addr)
 	log.Fatal(http.ListenAndServe(addr, r))

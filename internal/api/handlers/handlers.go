@@ -3,7 +3,6 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
-	"html"
 	"log"
 	"net/http"
 	"strconv"
@@ -24,8 +23,7 @@ func (env *Env) RootHandler(w http.ResponseWriter, r *http.Request) {
 		errorHandler(w, r, http.StatusNotFound, nil)
 		return
 	}
-
-	fmt.Fprintf(w, "Hello from root: %q", html.EscapeString(r.URL.Path))
+	json.NewEncoder(w).Encode(map[string]interface{}{"message": "Hello from root"})
 }
 
 // GetPosts - handler for GET /posts
@@ -35,7 +33,9 @@ func (env *Env) GetPosts(w http.ResponseWriter, r *http.Request) {
 		errorHandler(w, r, http.StatusInternalServerError, err)
 		return
 	}
-	fmt.Fprint(w, posts, "\n")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"ok": true, "data": posts,
+	})
 }
 
 // GetPost - handler for GET /post/{id}
@@ -53,10 +53,14 @@ func (env *Env) GetPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if post.Title == "" {
-		fmt.Fprint(w, "no posts with id: ", id, "\n")
-		return
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"ok": false, "message": "no posts with id: " + strconv.FormatInt(id, 10),
+		})
+	} else {
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"ok": true, "data": post,
+		})
 	}
-	fmt.Fprint(w, post, "\n")
 }
 
 // AddPost - handler for POST /post
@@ -74,7 +78,9 @@ func (env *Env) AddPost(w http.ResponseWriter, r *http.Request) {
 		errorHandler(w, r, http.StatusInternalServerError, err)
 		return
 	}
-	fmt.Fprint(w, "inserted successfully", "\n")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"ok": true, "message": "inserted successfully",
+	})
 }
 
 // UpdatePost - handler for PUT /post
@@ -116,9 +122,13 @@ func (env *Env) DeletePost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if isDeleted {
-		fmt.Fprint(w, "deleted successfully", "\n")
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"ok": true, "message": "deleted successfully",
+		})
 	} else {
-		fmt.Fprint(w, "nothing to delete", "\n")
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"ok": false, "message": "nothing to delete",
+		})
 	}
 }
 
@@ -129,7 +139,7 @@ func (env *Env) GetWelcomeHandler(w http.ResponseWriter, r *http.Request) {
 		errorHandler(w, r, http.StatusInternalServerError, err)
 		return
 	}
-	fmt.Fprint(w, "Welcome to my rest api! \nYour params are: ", r.Form, "\n")
+	json.NewEncoder(w).Encode(map[string]interface{}{"message": "Welcome to my rest api!"})
 }
 
 func errorHandler(w http.ResponseWriter, r *http.Request, status int, err error) {
@@ -138,17 +148,19 @@ func errorHandler(w http.ResponseWriter, r *http.Request, status int, err error)
 	}
 	w.WriteHeader(status)
 
+	response := make(map[string]interface{})
 	switch status {
 	case http.StatusNotFound:
-		fmt.Fprint(w, "404: not found")
+		response["error"] = "404: not found"
 	case http.StatusInternalServerError:
-		fmt.Fprint(w, "500: internal error")
+		response["error"] = "500: internal error"
 	case http.StatusBadRequest:
-		fmt.Fprint(w, "400: bad request")
+		response["error"] = "400: bad request"
 	case http.StatusMethodNotAllowed:
-		fmt.Fprint(w, "405: method not allowed")
+		response["error"] = "405: method not allowed"
 	default:
-		fmt.Fprint(w, status, " unexpected")
+		response["error"] = string(status) + ": unexpected status"
+		log.Println(status, " : unexpected status")
 	}
-
+	json.NewEncoder(w).Encode(response)
 }
