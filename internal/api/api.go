@@ -20,7 +20,11 @@ func Start(addr string) {
 	}
 
 	http.HandleFunc("/", env.RootHandler)
-	http.HandleFunc("/welcome", env.GetWelcomeHandler)
+	http.HandleFunc("/posts", env.GetPosts)
+	http.HandleFunc("/post", env.GetPost)
+	http.HandleFunc("/addpost", env.AddPost)
+	http.HandleFunc("/updatepost", env.UpdatePost)
+	http.HandleFunc("/deletepost", env.DeletePost)
 
 	log.Printf("server is listening on addr: %s\n", addr)
 	log.Fatal(http.ListenAndServe(addr, nil))

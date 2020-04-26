@@ -11,7 +11,7 @@ USE `rest`;
 
 DROP TABLE IF EXISTS `posts`;
 CREATE TABLE `posts` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `id` bigint NOT NULL AUTO_INCREMENT,
   `title` varchar(50) COLLATE utf8_bin NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;

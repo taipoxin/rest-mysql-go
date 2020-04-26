@@ -12,6 +12,10 @@ import (
 // Datastore presenting interface with methods for handlers
 type Datastore interface {
 	AllPosts() ([]*Post, error)
+	GetPost(id int64) (*Post, error)
+	AddPost(title string) error
+	UpdatePost(id int64, title string) error
+	DeletePost(id int64) error
 }
 
 // DbHelper presenting helper for sql.DB, implement Datastore
